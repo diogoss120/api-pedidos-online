@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
+    <ProjectReference Include="..\Sales.Persistence\Sales.Persistence.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="DTOs\Customer\" />
+    <Folder Include="DTOs\Product\" />
+  </ItemGroup>
+
+</Project>
