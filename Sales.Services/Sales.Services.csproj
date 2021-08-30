@@ -12,10 +12,5 @@
     <ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
     <ProjectReference Include="..\Sales.Persistence\Sales.Persistence.csproj" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="DTOs\Customer\" />
-    <Folder Include="DTOs\Product\" />
-  </ItemGroup>
 
 </Project>

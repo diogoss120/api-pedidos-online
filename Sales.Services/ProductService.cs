@@ -1,6 +1,8 @@
-﻿using Sales.Domain;
+﻿using AutoMapper;
+using Sales.Domain;
 using Sales.Persistence.Repositories.Entities;
 using Sales.Services.Contracts;
+using Sales.Services.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,19 +13,23 @@ namespace Sales.Services
     public class ProductService : IProductService
     {
         private readonly UnitOfWork unitOfWork;
+        private readonly IMapper mapper;
 
-        public ProductService(UnitOfWork unitOfWork)
+        public ProductService(UnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
+            this.mapper = mapper;
         }
-        public async Task<Product> Add(Product product)
+        public async Task<ProductDto> Add(ProductDto productDto)
         {
             try
             {
-                unitOfWork.ProductRepository.Add(product);
+                var product = mapper.Map<Product>(productDto);
+                unitOfWork.ProductRepository.Add<Product>(product);
                 if (await unitOfWork.CommitAsync())
                 {
-                    return await unitOfWork.ProductRepository.GetProductByIdAsync(product.Id);
+                    var response = await unitOfWork.ProductRepository.GetProductByIdAsync(product.Id);
+                    return mapper.Map<ProductDto>(response);
                 }
                 return null;
             }
@@ -57,7 +63,7 @@ namespace Sales.Services
 
                 foreach (int id in productsId)
                 {
-                    products.Add(await GetProductByIdAsync(id));
+                    products.Add(await unitOfWork.ProductRepository.GetProductByIdAsync(id));
                 }
 
                 unitOfWork.ProductRepository.DeleteRange(products.ToArray());
@@ -69,14 +75,14 @@ namespace Sales.Services
             }
         }
 
-        public async Task<Product> GetProductByIdAsync(int id)
+        public async Task<ProductDto> GetProductByIdAsync(int id)
         {
             try
             {
                 var product = await unitOfWork.ProductRepository.GetProductByIdAsync(id);
-                if (product == null) throw new ArgumentException("Esse produto não existe no banco de dados");
+                if (product == null) return null;
 
-                return product;
+                return mapper.Map<ProductDto>(product);
             }
             catch (Exception e)
             {
@@ -84,31 +90,33 @@ namespace Sales.Services
             }
         }
 
-        public async Task<IEnumerable<Product>> ProductListAsync()
+        public async Task<IEnumerable<ProductDto>> ProductListAsync()
         {
             try
             {
                 var products = await unitOfWork.ProductRepository.ProductListAsync();
                 if (products == null) return null;
 
-                return products;
+                return mapper.Map<ProductDto[]>(products);
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
         }
-        public async Task<Product> Update(int productId, Product model)
+        public async Task<ProductDto> Update(int productId, ProductDto productDto)
         {
             try
             {
                 var product = await unitOfWork.ProductRepository.GetProductByIdAsync(productId);
                 if (product == null) return null;
 
-                unitOfWork.ProductRepository.Update(model);
+                var model = mapper.Map<Product>(productDto);
+                unitOfWork.ProductRepository.Update<Product>(model);
                 if (await unitOfWork.CommitAsync())
                 {
-                    return await unitOfWork.ProductRepository.GetProductByIdAsync(model.Id);
+                    var response = await unitOfWork.ProductRepository.GetProductByIdAsync(model.Id);
+                    return mapper.Map<ProductDto>(response);
                 }
                 return null;
             }

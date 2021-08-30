@@ -1,6 +1,8 @@
-﻿using Sales.Domain;
+﻿using AutoMapper;
+using Sales.Domain;
 using Sales.Persistence.Repositories.Entities;
 using Sales.Services.Contracts;
+using Sales.Services.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,20 +13,24 @@ namespace Sales.Services
     public class OrderService : IOrderService
     {
         private readonly UnitOfWork unitOfWork;
+        private readonly IMapper mapper;
 
-        public OrderService(UnitOfWork unitOfWork)
+        public OrderService(UnitOfWork unitOfWork, IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
+            this.mapper = mapper;
         }
-        public async Task<Order> Add(Order order)
+        public async Task<OrderDto> Add(OrderDto orderDto)
         {
             try
             {
-                unitOfWork.OrderRepository.Add(order);
+                var model = mapper.Map<Order>(orderDto);
+                unitOfWork.OrderRepository.Add(model);
 
                 if (await unitOfWork.CommitAsync())
                 {
-                    return await unitOfWork.OrderRepository.GetOrderByIdAsync(order.Id);
+                    var response = await unitOfWork.OrderRepository.GetOrderByIdAsync(model.Id);
+                    return mapper.Map<OrderDto>(response);
                 }
                 return null;
             }
@@ -37,7 +43,7 @@ namespace Sales.Services
         {
             try
             {
-                var order = unitOfWork.OrderRepository.GetOrderByIdAsync(orderId);
+                var order = await unitOfWork.OrderRepository.GetOrderByIdAsync(orderId);
                 if (order == null) throw new ArgumentException("Esse pedido não existe no banco de dados");
 
                 unitOfWork.OrderRepository.Delete(order);
@@ -57,7 +63,7 @@ namespace Sales.Services
 
                 foreach (int id in ordersId)
                 {
-                    orders.Add(await GetOrderByIdAsync(id));
+                    orders.Add(await unitOfWork.OrderRepository.GetOrderByIdAsync(id));
                 }
 
                 unitOfWork.ProductRepository.DeleteRange(orders.ToArray());
@@ -69,47 +75,49 @@ namespace Sales.Services
             }
         }
 
-        public Task<Order> GetOrderByIdAsync(int id, bool includeProducts = false, bool includeCustomer = false)
+        public async Task<OrderDto> GetOrderByIdAsync(int id, bool includeProducts = false, bool includeCustomer = false)
         {
             try
             {
-                var order = unitOfWork.OrderRepository.GetOrderByIdAsync(id, includeProducts, includeCustomer);
-                if (order == null) throw new ArgumentException("Esse pedido não exite na base de dados");
-
-                return order;
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-        }
-
-        public Task<IEnumerable<Order>> OrderListAsync(bool includeProducts = false, bool includeCustomer = false)
-        {
-            try
-            {
-                var orders = unitOfWork.OrderRepository.OrderListAsync(includeProducts, includeCustomer);
-                if (orders == null) return null;
-
-                return orders;
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-        }
-
-        public async Task<Order> Update(int orderId, Order model)
-        {
-            try
-            {
-                var order = await GetOrderByIdAsync(orderId);
+                var order = await unitOfWork.OrderRepository.GetOrderByIdAsync(id, includeProducts, includeCustomer);
                 if (order == null) return null;
 
+                return mapper.Map<OrderDto>(order);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<OrderDto[]> OrderListAsync(bool includeProducts = false, bool includeCustomer = false)
+        {
+            try
+            {
+                var orders = await unitOfWork.OrderRepository.OrderListAsync(includeProducts, includeCustomer);
+                if (orders == null) return null;
+
+                return mapper.Map<OrderDto[]>(orders);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<OrderDto> Update(int orderId, OrderDto orderDto)
+        {
+            try
+            {
+                var order = await unitOfWork.OrderRepository.GetOrderByIdAsync(orderId);
+                if (order == null) return null;
+
+                var model = mapper.Map<Order>(orderDto);
                 unitOfWork.OrderRepository.Update(model);
                 if (await unitOfWork.CommitAsync())
                 {
-                    return await GetOrderByIdAsync(model.Id);
+                    var response = await unitOfWork.OrderRepository.GetOrderByIdAsync(model.Id);
+                    return mapper.Map<OrderDto>(response);
                 }
                 return null;
             }

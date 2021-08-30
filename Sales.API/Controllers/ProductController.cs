@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sales.Domain;
 using Sales.Services.Contracts;
+using Sales.Services.DTOs;
 using System;
 using System.Threading.Tasks;
 
@@ -41,7 +41,7 @@ namespace Sales.API.Controllers
             try
             {
                 var product = await productService.GetProductByIdAsync(id);
-                if (product == null) return NotFound("produto não encontrado");
+                if (product == null) return NoContent();
 
                 return Ok(product);
             }
@@ -53,7 +53,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(Product model)
+        public async Task<IActionResult> Post(ProductDto model)
         {
             try
             {
@@ -70,12 +70,12 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Product model)
+        public async Task<IActionResult> Put(int id, ProductDto model)
         {
             try
             {
                 var product = await productService.Update(id, model);
-                if (product == null) return BadRequest();
+                if (product == null) return NoContent();
 
                 return Ok(product);
             }
@@ -96,7 +96,7 @@ namespace Sales.API.Controllers
 
                 if (await productService.Delete(product.Id))
                 {
-                    return Ok("Cliente apagado com sucesso");
+                    return Ok("Produto apagado com sucesso");
                 }
                 else
                 {

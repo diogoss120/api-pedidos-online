@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sales.Domain;
 using Sales.Services.Contracts;
+using Sales.Services.DTOs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sales.API.Controllers
@@ -42,7 +40,7 @@ namespace Sales.API.Controllers
             try
             {
                 var customer = await customerService.GetCustomerByIdAsync(id);
-                if (customer == null) return NotFound("Cliente não encontrado");
+                if (customer == null) return NoContent();
 
                 return Ok(customer);
             }
@@ -54,7 +52,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(Customer model)
+        public async Task<IActionResult> Post(CustomerDto model)
         {
             try
             {
@@ -71,12 +69,12 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Customer model)
+        public async Task<IActionResult> Put(int id, CustomerDto model)
         {
             try
             {
                 var customer = await customerService.Update(id, model);
-                if (customer == null) return BadRequest();
+                if (customer == null) return NoContent();
 
                 return Ok(customer);
             }
@@ -101,7 +99,7 @@ namespace Sales.API.Controllers
                 }
                 else
                 {
-                    throw new Exception("Ocorreu um problem não específico ao tentar deletar cliente.");
+                    throw new Exception("Ocorreu um problem não específico ao tentar deletar o cliente.");
                 }
             }
             catch (Exception e)

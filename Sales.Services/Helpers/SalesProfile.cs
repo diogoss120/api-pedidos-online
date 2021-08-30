@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Sales.Domain;
-using Sales.Services.DTOs.Order;
+using Sales.Services.DTOs;
 
 namespace Sales.Services.Helpers
 {
@@ -8,7 +8,9 @@ namespace Sales.Services.Helpers
     {
         public SalesProfile()
         {
-            CreateMap<Order, OrderDto>();
+            CreateMap<Order, OrderDto>().ReverseMap();
+            CreateMap<Customer, CustomerDto>().ReverseMap();
+            CreateMap<Product, ProductDto>().ReverseMap();
         }
 
     }

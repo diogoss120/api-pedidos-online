@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sales.Domain;
 using Sales.Services.Contracts;
+using Sales.Services.DTOs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sales.API.Controllers
@@ -55,7 +53,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(Order model)
+        public async Task<IActionResult> Post(OrderDto model)
         {
             try
             {
@@ -72,7 +70,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Order model)
+        public async Task<IActionResult> Put(int id, OrderDto model)
         {
             try
             {
@@ -102,13 +100,13 @@ namespace Sales.API.Controllers
                 }
                 else
                 {
-                    throw new Exception("Erro inesperado ao tentar excluir pedido");
+                    throw new Exception("Ocorreu um problem não específico ao tentar deletar o pedido");
                 }
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Erro interno ao tentar atualizar pedido, Erro: {e.Message}");
+                    $"Erro interno ao tentar apagar pedido, Erro: {e.Message}");
             }
         }
     }
